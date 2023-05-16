@@ -2,3 +2,6 @@ name: ExtendedWhitelist
 version: '${project.version}'
 main: com.person98.extendedwhitelist.ExtendedWhitelist
 api-version: 1.19
+commands:
+  ExtendedWhitelist:
+    description: Adds a player to the whitelist for a specific duration.
