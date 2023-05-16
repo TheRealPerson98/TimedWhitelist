@@ -4,10 +4,18 @@ kickOnWhitelistEnd: true
 # Whether to send expiration warnings to players before their whitelist time expires
 sendExpirationWarnings: true
 
+
+# We recommend setting this to 5 minutes
 enableWhitelist: true
 
+# Placegolders
 timeleftplaceholder: "time_left"
 whitelistedplayersplaceholder: "whitelisted_players"
+
+# Whether to enable Discord integration
+discordIntegrationEnabled: true
+discordBotToken: "your-bot-token"
+discordChannelId: "your-channel-id"
 
 # Messages
 messages:
