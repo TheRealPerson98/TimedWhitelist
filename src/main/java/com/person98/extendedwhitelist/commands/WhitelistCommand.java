@@ -23,17 +23,23 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
     private WhitelistManager whitelistManager;
     private FileConfiguration config;
     boolean shouldKick;
+    private boolean isWhitelistEnabled;
 
     public WhitelistCommand(ExtendedWhitelist plugin, WhitelistManager whitelistManager) {
         this.plugin = plugin;
         this.whitelistManager = whitelistManager;
         this.config = plugin.getConfig();
         this.shouldKick = config.getBoolean("kickOnWhitelistRemoval");
+        this.isWhitelistEnabled = config.getBoolean("enableWhitelist");
 
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!isWhitelistEnabled) {
+            sender.sendMessage(ChatColor.RED + "The whitelist is currently disabled.");
+            return false;
+        }
         if (args.length < 1) {
             sender.sendMessage(ChatColor.RED + "Usage: /ExtendedWhitelist <add|addtime|removetime|list> [player] <time>");
             return false;
@@ -115,6 +121,31 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                 }
 
                 break;
+            case "on":
+                if (!sender.hasPermission("extendedwhitelist.toggle")) {
+                    sender.sendMessage(ChatColor.RED + "You do not have permission to toggle the whitelist.");
+                    return false;
+                }
+                isWhitelistEnabled = true;
+                Bukkit.setWhitelist(true);
+                config.set("enableWhitelist", true);
+                Bukkit.setWhitelist(true);
+
+                sender.sendMessage(ChatColor.GREEN + "Whitelist has been enabled.");
+                return true;
+
+            case "off":
+                if (!sender.hasPermission("extendedwhitelist.toggle")) {
+                    sender.sendMessage(ChatColor.RED + "You do not have permission to toggle the whitelist.");
+                    return false;
+                }
+                isWhitelistEnabled = false;
+                Bukkit.setWhitelist(false);
+                config.set("enableWhitelist", false);
+                Bukkit.setWhitelist(true);
+
+                sender.sendMessage(ChatColor.GREEN + "Whitelist has been disabled.");
+                return true;
             case "remove":
                 if (args.length != 2) {
                     sender.sendMessage(ChatColor.RED + "Usage: /ExtendedWhitelist remove <player>");
@@ -266,7 +297,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            List<String> subCommands = Arrays.asList("add", "addtime", "removetime", "remove", "list");
+            List<String> subCommands = Arrays.asList("add", "addtime", "removetime", "remove", "list", "on", "off");
             List<String> completions = new ArrayList<>();
             for (String subCommand : subCommands) {
                 if (subCommand.startsWith(args[0])) {

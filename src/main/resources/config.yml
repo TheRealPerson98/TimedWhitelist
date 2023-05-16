@@ -4,6 +4,11 @@ kickOnWhitelistEnd: true
 # Whether to send expiration warnings to players before their whitelist time expires
 sendExpirationWarnings: true
 
+enableWhitelist: true
+
+timeleftplaceholder: "time_left"
+whitelistedplayersplaceholder: "whitelisted_players"
+
 # Messages
 messages:
   playerWhitelistStatus: "&a%player% has %time% left on the whitelist."
@@ -17,3 +22,6 @@ messages:
   playerRemovedFromWhitelist: "&c%player% has been removed from the whitelist."
   yourWhitelistTimeExtended: "&aYour whitelist time has been extended by %time%."
   yourWhitelistTimeRemoved: "&cYour whitelist time has been removed."
+  playerNotOnWhitelist: "Player is not on the whitelist"
+  noTimeLeft: "No time left"
+  noPlayersOnWhitelist: "No players are currently whitelisted."

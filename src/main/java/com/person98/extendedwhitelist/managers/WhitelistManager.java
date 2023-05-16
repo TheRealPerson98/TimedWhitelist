@@ -125,7 +125,7 @@ public class WhitelistManager {
         OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
         String uuidString = playerUUID.toString();
         if (!whitelistConfig.contains(uuidString + ".duration")) {
-            throw new IllegalArgumentException("Player " + player.getName() + " is not on the whitelist.");
+            return -1; // Return -1 or any specific value to indicate that the player is not on the whitelist
         }
 
         long addedAt = whitelistConfig.getLong(playerUUID + ".addedAt");

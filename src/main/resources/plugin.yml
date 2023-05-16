@@ -24,3 +24,6 @@ commands:
       extendedwhitelist.list.all:
         description: Permission to list all players on the whitelist
         default: op
+      extendedwhitelist:
+        description: Permission to toggle whitelist on and off
+        default: op
