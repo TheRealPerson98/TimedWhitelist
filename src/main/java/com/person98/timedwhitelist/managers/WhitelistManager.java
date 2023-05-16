@@ -1,6 +1,6 @@
-package com.person98.extendedwhitelist.managers;
+package com.person98.timedwhitelist.managers;
 
-import com.person98.extendedwhitelist.ExtendedWhitelist;
+import com.person98.timedwhitelist.TimedWhitelist;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class WhitelistManager {
-    private final ExtendedWhitelist plugin;
+    private final TimedWhitelist plugin;
     private final File whitelistFile;
     private final FileConfiguration whitelistConfig;
     private final Map<UUID, BukkitRunnable> tasks = new HashMap<>();
@@ -33,7 +33,7 @@ public class WhitelistManager {
     private boolean sendExpirationWarnings;
     private JDA jda;
     private String channelId;
-    public WhitelistManager(ExtendedWhitelist plugin) {
+    public WhitelistManager(TimedWhitelist plugin) {
         this.plugin = plugin;
         this.whitelistFile = new File(plugin.getDataFolder(), "whitelist.yml");
         this.whitelistConfig = YamlConfiguration.loadConfiguration(whitelistFile);

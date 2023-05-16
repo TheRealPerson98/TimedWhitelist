@@ -1,29 +1,29 @@
-name: ExtendedWhitelist
+name: TimedWhitelist
 version: '${project.version}'
-main: com.person98.extendedwhitelist.ExtendedWhitelist
+main: com.person98.timedwhitelist.TimedWhitelist
 api-version: 1.19
 commands:
-  ExtendedWhitelist:
+  timedwhitelist:
     description: Adds a player to the whitelist for a specific duration.
     permissions:
-      extendedwhitelist.add:
+      timedwhitelist.add:
         description: Permission to add players to the whitelist
         default: op
-      extendedwhitelist.addtime:
+      timedwhitelist.addtime:
         description: Permission to add time to a player's whitelist
         default: op
-      extendedwhitelist.removetime:
+      timedwhitelist.removetime:
         description: Permission to remove time from a player's whitelist
         default: op
-      extendedwhitelist.remove:
+      timedwhitelist.remove:
         description: Permission to remove players from the whitelist
         default: op
-      extendedwhitelist.list:
+      timedwhitelist.list:
         description: Permission to list players on the whitelist
         default: op
-      extendedwhitelist.list.all:
+      timedwhitelist.list.all:
         description: Permission to list all players on the whitelist
         default: op
-      extendedwhitelist:
+      timedwhitelist.toggle:
         description: Permission to toggle whitelist on and off
         default: op

@@ -13,7 +13,7 @@ timeleftplaceholder: "time_left"
 whitelistedplayersplaceholder: "whitelisted_players"
 
 # Whether to enable Discord integration
-discordIntegrationEnabled: true
+discordIntegrationEnabled: false
 discordBotToken: "your-bot-token"
 discordChannelId: "your-channel-id"
 

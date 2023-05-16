@@ -1,7 +1,7 @@
-package com.person98.extendedwhitelist.commands;
+package com.person98.timedwhitelist.commands;
 
-import com.person98.extendedwhitelist.ExtendedWhitelist;
-import com.person98.extendedwhitelist.managers.WhitelistManager;
+import com.person98.timedwhitelist.TimedWhitelist;
+import com.person98.timedwhitelist.managers.WhitelistManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -19,13 +19,13 @@ import java.util.UUID;
 
 public class WhitelistCommand implements CommandExecutor, TabCompleter {
 
-    private ExtendedWhitelist plugin;
+    private TimedWhitelist plugin;
     private WhitelistManager whitelistManager;
     private FileConfiguration config;
     boolean shouldKick;
     private boolean isWhitelistEnabled;
 
-    public WhitelistCommand(ExtendedWhitelist plugin, WhitelistManager whitelistManager) {
+    public WhitelistCommand(TimedWhitelist plugin, WhitelistManager whitelistManager) {
         this.plugin = plugin;
         this.whitelistManager = whitelistManager;
         this.config = plugin.getConfig();
@@ -41,7 +41,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
             return false;
         }
         if (args.length < 1) {
-            sender.sendMessage(ChatColor.RED + "Usage: /ExtendedWhitelist <add|addtime|removetime|list> [player] <time>");
+            sender.sendMessage(ChatColor.RED + "Usage: /timedwhitelist <add|addtime|removetime|list> [player] <time>");
             return false;
         }
 
@@ -53,7 +53,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
             case "addtime":
             case "removetime":
                 if (args.length != 3) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /ExtendedWhitelist " + action + " <player> <time>");
+                    sender.sendMessage(ChatColor.RED + "Usage: /timedwhitelist " + action + " <player> <time>");
                     return false;
                 }
 
@@ -77,7 +77,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                 try {
                     switch (action) {
                         case "add":
-                            if (!sender.hasPermission("extendedwhitelist.add")) {
+                            if (!sender.hasPermission("timedwhitelist.add")) {
                                 sender.sendMessage(ChatColor.RED + "You do not have permission to add players to the whitelist.");
                                 return false;
                             }
@@ -90,7 +90,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                             break;
 
                         case "addtime":
-                            if (!sender.hasPermission("extendedwhitelist.addtime")) {
+                            if (!sender.hasPermission("timedwhitelist.addtime")) {
                                 sender.sendMessage(ChatColor.RED + "You do not have permission to add players to the whitelist.");
                                 return false;
                             }
@@ -103,7 +103,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                             break;
 
                         case "removetime":
-                            if (!sender.hasPermission("extendedwhitelist.removetime")) {
+                            if (!sender.hasPermission("timedwhitelist.removetime")) {
                                 sender.sendMessage(ChatColor.RED + "You do not have permission to add players to the whitelist.");
                                 return false;
                             }
@@ -122,7 +122,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
 
                 break;
             case "on":
-                if (!sender.hasPermission("extendedwhitelist.toggle")) {
+                if (!sender.hasPermission("timedwhitelist.toggle")) {
                     sender.sendMessage(ChatColor.RED + "You do not have permission to toggle the whitelist.");
                     return false;
                 }
@@ -135,7 +135,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                 return true;
 
             case "off":
-                if (!sender.hasPermission("extendedwhitelist.toggle")) {
+                if (!sender.hasPermission("timedwhitelist.toggle")) {
                     sender.sendMessage(ChatColor.RED + "You do not have permission to toggle the whitelist.");
                     return false;
                 }
@@ -151,7 +151,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(ChatColor.RED + "Usage: /ExtendedWhitelist remove <player>");
                     return false;
                 }
-                if (!sender.hasPermission("extendedwhitelist.remove")) {
+                if (!sender.hasPermission("timedwhitelist.remove")) {
                     sender.sendMessage(ChatColor.RED + "You do not have permission to remove players from the whitelist.");
                     return false;
                 }
@@ -175,10 +175,10 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                 break;
             case "list":
                 if (args.length > 2) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /ExtendedWhitelist list [player]");
+                    sender.sendMessage(ChatColor.RED + "Usage: /timedwhitelist list [player]");
                     return false;
                 }
-                if (!sender.hasPermission("extendedwhitelist.list")) {
+                if (!sender.hasPermission("timedwhitelist.list")) {
                     sender.sendMessage(ChatColor.RED + "You do not have permission to list players.");
                     return false;
                 }
@@ -194,7 +194,7 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                         long timeLeft = whitelistManager.getTimeLeft(player.getUniqueId());
                         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.playerTimeLeft")).replace("%time%", formatTime(timeLeft)));
                     } else if (args[1].equalsIgnoreCase("all")) {
-                        if (!sender.hasPermission("extendedwhitelist.list.all")) {
+                        if (!sender.hasPermission("timedwhitelist.list.all")) {
                             sender.sendMessage(ChatColor.RED + "You do not have permission to list all players.");
                             return false;
                         }

@@ -1,19 +1,18 @@
-package com.person98.extendedwhitelist.managers;
+package com.person98.timedwhitelist.managers;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import com.person98.extendedwhitelist.ExtendedWhitelist;
-import com.person98.extendedwhitelist.managers.WhitelistManager;
+import com.person98.timedwhitelist.TimedWhitelist;
 
-public class ExtendedWhitelistExpansion extends PlaceholderExpansion {
+public class timedwhitelistExpansion extends PlaceholderExpansion {
 
-    private ExtendedWhitelist plugin;
+    private TimedWhitelist plugin;
     private WhitelistManager whitelistManager;
     private FileConfiguration config;
 
-    public ExtendedWhitelistExpansion(ExtendedWhitelist plugin, WhitelistManager whitelistManager) {
+    public timedwhitelistExpansion(TimedWhitelist plugin, WhitelistManager whitelistManager) {
         this.plugin = plugin;
         this.whitelistManager = whitelistManager;
         this.config = plugin.getConfig();
@@ -65,10 +64,44 @@ public class ExtendedWhitelistExpansion extends PlaceholderExpansion {
         if (timeInSeconds == 0) {
             return ChatColor.translateAlternateColorCodes('&', config.getString("messages.noTimeLeft"));
         }
+
+        long years = timeInSeconds / (60 * 60 * 24 * 365);
+        timeInSeconds = timeInSeconds % (60 * 60 * 24 * 365);
+
+        long months = timeInSeconds / (60 * 60 * 24 * 30);
+        timeInSeconds = timeInSeconds % (60 * 60 * 24 * 30);
+
+        long days = timeInSeconds / (60 * 60 * 24);
+        timeInSeconds = timeInSeconds % (60 * 60 * 24);
+
         long hours = timeInSeconds / 3600;
-        long minutes = (timeInSeconds % 3600) / 60;
-        long seconds = timeInSeconds % 60;
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+        timeInSeconds = timeInSeconds % 3600;
+
+        long minutes = timeInSeconds / 60;
+        timeInSeconds = timeInSeconds % 60;
+
+        long seconds = timeInSeconds;
+
+        StringBuilder sb = new StringBuilder();
+        if (years > 0) {
+            sb.append(years).append(":");
+        }
+        if (months > 0) {
+            sb.append(months).append(":");
+        }
+        if (days > 0) {
+            sb.append(days).append(":");
+        }
+        if (hours > 0) {
+            sb.append(hours).append(":");
+        }
+        if (minutes > 0) {
+            sb.append(minutes).append(":");
+        }
+        if (seconds > 0) {
+            sb.append(seconds).append("");
+        }
+        return sb.toString().trim();
     }
 
 }

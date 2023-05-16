@@ -1,10 +1,10 @@
-package com.person98.extendedwhitelist;
+package com.person98.timedwhitelist;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.person98.extendedwhitelist.commands.WhitelistCommand;
-import com.person98.extendedwhitelist.managers.ExtendedWhitelistExpansion;
-import com.person98.extendedwhitelist.managers.WhitelistManager;
+import com.person98.timedwhitelist.commands.WhitelistCommand;
+import com.person98.timedwhitelist.managers.timedwhitelistExpansion;
+import com.person98.timedwhitelist.managers.WhitelistManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -16,7 +16,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-public final class ExtendedWhitelist extends JavaPlugin {
+public final class TimedWhitelist extends JavaPlugin {
 
     private WhitelistManager whitelistManager;
 
@@ -28,10 +28,10 @@ public final class ExtendedWhitelist extends JavaPlugin {
         whitelistManager = new WhitelistManager(this);
         whitelistManager.loadWhitelist();
         WhitelistCommand whitelistCommand = new WhitelistCommand(this, whitelistManager);
-        getCommand("ExtendedWhitelist").setExecutor(whitelistCommand);
-        getCommand("ExtendedWhitelist").setTabCompleter(whitelistCommand);
+        getCommand("timedwhitelist").setExecutor(whitelistCommand);
+        getCommand("timedwhitelist").setTabCompleter(whitelistCommand);
         if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null){
-            new ExtendedWhitelistExpansion(this, whitelistManager).register();
+            new timedwhitelistExpansion(this, whitelistManager).register();
         }
 
     }
