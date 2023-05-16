@@ -16,7 +16,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.awt.*;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +35,8 @@ public class WhitelistManager {
     private boolean sendExpirationWarnings;
     private JDA jda;
     private String channelId;
+    private final File logFile;
+    private final boolean shouldLog;
     public WhitelistManager(TimedWhitelist plugin) {
         this.plugin = plugin;
         this.whitelistFile = new File(plugin.getDataFolder(), "whitelist.yml");
@@ -41,6 +45,8 @@ public class WhitelistManager {
 
         this.kickOnWhitelistEnd = config.getBoolean("kickOnWhitelistEnd", true);
         this.sendExpirationWarnings = config.getBoolean("sendExpirationWarnings", true);
+        this.logFile = new File(plugin.getDataFolder(), "whitelist.log");
+        this.shouldLog = config.getBoolean("enableLogging");
         if (config.getBoolean("discordIntegrationEnabled")) {
             try {
                 jda = JDABuilder.createDefault(config.getString("discordBotToken"))
@@ -54,7 +60,7 @@ public class WhitelistManager {
     }
 
 
-    public void addPlayerToWhitelist(UUID playerUUID, long durationInSeconds) {
+    public void addPlayerToWhitelist(UUID playerUUID, long durationInSeconds, UUID executorUUID) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
         player.setWhitelisted(true);
         String uuidString = playerUUID.toString();
@@ -69,13 +75,19 @@ public class WhitelistManager {
 
         task.runTaskLater(plugin, durationInSeconds * 20);
         tasks.put(playerUUID, task);
-
-        if (jda != null) {
+        if (shouldLog) {
+            String executorName = executorUUID != null ? Bukkit.getOfflinePlayer(executorUUID).getName() : "CONSOLE";
+            logToFile("Player " + player.getName() + " (UUID: " + playerUUID + ") was added to the whitelist by " + executorName + " (UUID: " + executorUUID + ") for " + formatDuration(durationInSeconds) + ".");
+        }
+        if (jda != null)
+ {
             TextChannel channel = jda.getTextChannelById(channelId);
             if (channel != null) {
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setTitle("Whitelist Update");
-                embedBuilder.setDescription(player.getName() + " has been added to the whitelist for " + formatDuration(durationInSeconds) + ".");
+                String executorName = executorUUID != null ? Bukkit.getOfflinePlayer(executorUUID).getName() : "CONSOLE";
+
+                embedBuilder.setDescription(player.getName() + " has been added to the whitelist for " + formatDuration(durationInSeconds) + " by " + executorName + ".");
                 MessageEmbed embed = embedBuilder.build();
                 embedBuilder.setColor(Color.GREEN); // Set the color to green (you can use other Color constants or specify a custom RGB value)
 
@@ -141,7 +153,7 @@ public class WhitelistManager {
         tasks.put(playerUUID, newTask);
     }
 
-    public void removePlayerFromWhitelist(UUID playerUUID) {
+    public void removePlayerFromWhitelist(UUID playerUUID, UUID executorUUID) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
         String uuidString = playerUUID.toString();
         player.setWhitelisted(false);
@@ -154,7 +166,10 @@ public class WhitelistManager {
         if (task != null) {
             task.cancel();
         }
-
+        if (shouldLog) {
+            String executorName = executorUUID != null ? Bukkit.getOfflinePlayer(executorUUID).getName() : "CONSOLE";
+            logToFile("Player " + player.getName() + " (UUID: " + playerUUID + ") was removed from the whitelist by " + executorName + " (UUID: " + executorUUID + ").");
+        }
         if (jda != null) {
             TextChannel channel = jda.getTextChannelById(channelId);
             if (channel != null) {
@@ -197,9 +212,9 @@ public class WhitelistManager {
             long remainingTime = addedAt + duration - System.currentTimeMillis() / 1000;
 
             if (remainingTime > 0) {
-                addPlayerToWhitelist(playerUUID, remainingTime);
+                addPlayerToWhitelist(playerUUID, remainingTime, null);
             } else {
-                removePlayerFromWhitelist(playerUUID);
+                removePlayerFromWhitelist(playerUUID, null);
             }
         }
     }
@@ -218,12 +233,18 @@ public class WhitelistManager {
             e.printStackTrace();
         }
     }
-
+    private void logToFile(String message) {
+        try (PrintWriter out = new PrintWriter(new FileWriter(logFile, true))) {
+            out.println("[" + new Date() + "] " + message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private BukkitRunnable createExpirationTask(UUID playerUUID, long durationInSeconds) {
         return new BukkitRunnable() {
             @Override
             public void run() {
-                removePlayerFromWhitelist(playerUUID);
+                removePlayerFromWhitelist(playerUUID, null);
                 OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
                 if (player.isOnline() && kickOnWhitelistEnd) {
                     player.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&', config.getString("messages.whitelistExpired")));

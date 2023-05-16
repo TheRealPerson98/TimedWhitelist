@@ -1,12 +1,18 @@
+# TimedWhitelist configuration file
+
+
 # Whether to kick players from the server when their whitelist time expires
 kickOnWhitelistEnd: true
 
 # Whether to send expiration warnings to players before their whitelist time expires
-sendExpirationWarnings: true
 
+sendExpirationWarnings: true
 
 # We recommend setting this to 5 minutes
 enableWhitelist: true
+
+# Whether to enable logging
+enableLogging: true
 
 # Placegolders
 timeleftplaceholder: "time_left"

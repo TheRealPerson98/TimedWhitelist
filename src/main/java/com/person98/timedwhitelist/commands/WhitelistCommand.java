@@ -81,7 +81,8 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                                 sender.sendMessage(ChatColor.RED + "You do not have permission to add players to the whitelist.");
                                 return false;
                             }
-                            whitelistManager.addPlayerToWhitelist(playerUUID, duration);
+                            UUID executorUUID = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
+                            whitelistManager.addPlayerToWhitelist(playerUUID, duration, executorUUID);
                             Player player = Bukkit.getPlayer(playerUUID);
                             if (player != null) {
                                 player.sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.yourWhitelistTimeExtended").replace("%time%", durationStr)));
@@ -161,8 +162,9 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(ChatColor.RED + "Player not found.");
                     return false;
                 }
+                UUID executorUUID = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
 
-                whitelistManager.removePlayerFromWhitelist(playerUUIDToRemove);
+                whitelistManager.removePlayerFromWhitelist(playerUUIDToRemove, executorUUID);
 
                 if (shouldKick) {
                     Player playerToRemove = Bukkit.getPlayer(playerUUIDToRemove);
