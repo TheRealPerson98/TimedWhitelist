@@ -97,7 +97,7 @@ public class WhitelistManager {
     }
 
 
-    public void addTimeToWhitelist(UUID playerUUID, long additionalTimeInSeconds) {
+    public void addTimeToWhitelist(UUID playerUUID, long additionalTimeInSeconds, UUID executorUUID) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
         String uuidString = playerUUID.toString();
         if (!whitelistConfig.contains(uuidString + ".duration")) {
@@ -122,9 +122,27 @@ public class WhitelistManager {
 
         newTask.runTaskLater(plugin, newDuration * 20);
         tasks.put(playerUUID, newTask);
-    }
+        if (shouldLog) {
+            String executorName = executorUUID != null ? Bukkit.getOfflinePlayer(executorUUID).getName() : "CONSOLE";
+            logToFile("Player " + player.getName() + " (UUID: " + playerUUID + ") had their whitelist time extended by " + executorName + " (UUID: " + executorUUID + ") for " + formatDuration(additionalTimeInSeconds) + ".");
+        }
 
-    public void removeTimeFromWhitelist(UUID playerUUID, long timeToRemoveInSeconds) {
+        if (jda != null) {
+            TextChannel channel = jda.getTextChannelById(channelId);
+            if (channel != null) {
+                EmbedBuilder embedBuilder = new EmbedBuilder();
+                embedBuilder.setTitle("Whitelist Update");
+
+                String executorName = executorUUID != null ? Bukkit.getOfflinePlayer(executorUUID).getName() : "CONSOLE";
+                embedBuilder.setDescription(player.getName() + "'s whitelist time has been extended for " + formatDuration(additionalTimeInSeconds) + " by " + executorName + ".");
+                MessageEmbed embed = embedBuilder.build();
+                embedBuilder.setColor(Color.GREEN); // Set the color to green (you can use other Color constants or specify a custom RGB value)
+
+                channel.sendMessageEmbeds(embed).queue();
+            }
+        }
+    }
+    public void removeTimeFromWhitelist(UUID playerUUID, long timeToRemoveInSeconds, UUID executorUUID) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
         String uuidString = playerUUID.toString();
         if (!whitelistConfig.contains(uuidString + ".duration")) {
@@ -151,8 +169,27 @@ public class WhitelistManager {
 
         newTask.runTaskLater(plugin, newDuration * 20);
         tasks.put(playerUUID, newTask);
-    }
 
+        if (shouldLog) {
+            String executorName = executorUUID != null ? Bukkit.getOfflinePlayer(executorUUID).getName() : "CONSOLE";
+            logToFile("Player " + player.getName() + " (UUID: " + playerUUID + ") had their whitelist time reduced by " + executorName + " (UUID: " + executorUUID + ") for " + formatDuration(timeToRemoveInSeconds) + ".");
+        }
+
+        if (jda != null) {
+            TextChannel channel = jda.getTextChannelById(channelId);
+            if (channel != null) {
+                EmbedBuilder embedBuilder = new EmbedBuilder();
+                embedBuilder.setTitle("Whitelist Update");
+
+                String executorName = executorUUID != null ? Bukkit.getOfflinePlayer(executorUUID).getName() : "CONSOLE";
+                embedBuilder.setDescription(player.getName() + "'s whitelist time has been reduced for " + formatDuration(timeToRemoveInSeconds) + " by " + executorName + ".");
+                MessageEmbed embed = embedBuilder.build();
+                embedBuilder.setColor(Color.GREEN); // Set the color to green (you can use other Color constants or specify a custom RGB value)
+
+                channel.sendMessageEmbeds(embed).queue();
+            }
+        }
+    }
     public void removePlayerFromWhitelist(UUID playerUUID, UUID executorUUID) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
         String uuidString = playerUUID.toString();
@@ -175,7 +212,9 @@ public class WhitelistManager {
             if (channel != null) {
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setTitle("Whitelist Update");
-                embedBuilder.setDescription(player.getName() + "'s whitelist has expired.");
+                String executorName = executorUUID != null ? Bukkit.getOfflinePlayer(executorUUID).getName() : "CONSOLE";
+
+                embedBuilder.setDescription(player.getName() + "'s whitelist has been removed by " + executorName + ".");
                 MessageEmbed embed = embedBuilder.build();
                 embedBuilder.setColor(Color.RED); // Set the color to green (you can use other Color constants or specify a custom RGB value)
 

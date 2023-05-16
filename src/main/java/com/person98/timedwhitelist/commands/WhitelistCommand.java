@@ -95,7 +95,9 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                                 sender.sendMessage(ChatColor.RED + "You do not have permission to add players to the whitelist.");
                                 return false;
                             }
-                            whitelistManager.addTimeToWhitelist(playerUUID, duration);
+                            UUID executorUUID2 = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
+
+                            whitelistManager.addTimeToWhitelist(playerUUID, duration, executorUUID2 );
                             Player player2 = Bukkit.getPlayer(playerUUID);
                             if (player2 != null) {
                                 player2.sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.yourWhitelistTimeExtended").replace("%time%", durationStr)));
@@ -108,7 +110,9 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                                 sender.sendMessage(ChatColor.RED + "You do not have permission to add players to the whitelist.");
                                 return false;
                             }
-                            whitelistManager.removeTimeFromWhitelist(playerUUID, duration);
+                            UUID executorUUID1 = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
+
+                            whitelistManager.removeTimeFromWhitelist(playerUUID, duration, executorUUID1);
                             Player player1 = Bukkit.getPlayer(playerUUID);
                             if (player1 != null) {
                                 player1.sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.yourWhitelistTimeRemoved").replace("%time%", durationStr)));
