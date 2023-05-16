@@ -174,8 +174,8 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.playerRemovedFromWhitelist").replace("%player%", playerName)));
                 break;
             case "list":
-                if (args.length > 2) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /timedwhitelist list [player]");
+                if (args.length > 3) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /timedwhitelist list [player] [page]");
                     return false;
                 }
                 if (!sender.hasPermission("timedwhitelist.list")) {
@@ -221,7 +221,8 @@ public class WhitelistCommand implements CommandExecutor, TabCompleter {
                         for (int i = startIndex; i < endIndex; i++) {
                             OfflinePlayer player = whitelistedPlayers.get(i);
                             long timeLeft = whitelistManager.getTimeLeft(player.getUniqueId());
-                            sender.sendMessage(ChatColor.GREEN + player.getName() + " - " + formatTime(timeLeft) + " left on the whitelist.");                        }
+                            sender.sendMessage(ChatColor.GREEN + player.getName() + " - " + formatTime(timeLeft) + " left on the whitelist.");
+                        }
                     } else {
                         playerName = args[1];
                         UUID playerUUID1 = plugin.getPlayerUUID(playerName);
