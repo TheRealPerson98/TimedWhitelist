@@ -3,6 +3,7 @@ package com.person98.extendedwhitelist;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.person98.extendedwhitelist.commands.WhitelistCommand;
+import com.person98.extendedwhitelist.managers.ExtendedWhitelistExpansion;
 import com.person98.extendedwhitelist.managers.WhitelistManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -21,14 +22,18 @@ public final class ExtendedWhitelist extends JavaPlugin {
 
     @Override
     public void onEnable() {
+
         saveDefaultConfig();
 
         whitelistManager = new WhitelistManager(this);
         whitelistManager.loadWhitelist();
-
         WhitelistCommand whitelistCommand = new WhitelistCommand(this, whitelistManager);
         getCommand("ExtendedWhitelist").setExecutor(whitelistCommand);
         getCommand("ExtendedWhitelist").setTabCompleter(whitelistCommand);
+        if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null){
+            new ExtendedWhitelistExpansion(this, whitelistManager).register();
+        }
+
     }
     public UUID getPlayerUUID(String playerName) {
         // First, check if the player is online
