@@ -74,6 +74,10 @@
             <name>jcenter-bintray</name>
             <url>https://jcenter.bintray.com</url>
         </repository>
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -81,13 +85,35 @@
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
             <version>5.0.0-beta.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.dv8tion</groupId>
+                    <artifactId>JDA-NAS</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.dv8tion</groupId>
+                    <artifactId>JDA-Utilities</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.jagrosh</groupId>
+                    <artifactId>jda-utilities</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>club.minnced</groupId>
+                    <artifactId>opus-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <!-- Add more exclusions as needed -->
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.11.3</version> <!-- Use the latest version -->
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/PlaceholderAPI.jar</systemPath>
+            <version>2.11.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.papermc.paper</groupId>
