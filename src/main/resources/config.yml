@@ -1,0 +1,19 @@
+# Whether to kick players from the server when their whitelist time expires
+kickOnWhitelistEnd: true
+
+# Whether to send expiration warnings to players before their whitelist time expires
+sendExpirationWarnings: true
+
+# Messages
+messages:
+  playerWhitelistStatus: "&a%player% has %time% left on the whitelist."
+  playerWhitelisted: "&aPlayer %player% has been whitelisted for %time%."
+  timeAddedToWhitelist: "&aAdded %time% to %player%'s whitelist duration."
+  timeRemovedFromWhitelist: "&cRemoved %time% from %player%'s whitelist duration."
+  whitelistExpired: "&cYour time on the whitelist has expired!"
+  playerTimeLeft: "&aYou have %time% left on the whitelist."
+  5minleft: "&aYou have 5 minutes left on the whitelist."
+  1minleft: "&aYou have 1 minute left on the whitelist."
+  playerRemovedFromWhitelist: "&c%player% has been removed from the whitelist."
+  yourWhitelistTimeExtended: "&aYour whitelist time has been extended by %time%."
+  yourWhitelistTimeRemoved: "&cYour whitelist time has been removed."

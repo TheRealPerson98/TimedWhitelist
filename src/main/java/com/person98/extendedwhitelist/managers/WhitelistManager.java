@@ -2,6 +2,7 @@ package com.person98.extendedwhitelist.managers;
 
 import com.person98.extendedwhitelist.ExtendedWhitelist;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -9,161 +10,156 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class WhitelistManager {
     private final ExtendedWhitelist plugin;
     private final File whitelistFile;
     private final FileConfiguration whitelistConfig;
-    private final Map<String, BukkitRunnable> tasks = new HashMap<>();
+    private final Map<UUID, BukkitRunnable> tasks = new HashMap<>();
+    private FileConfiguration config;
+
+    private boolean kickOnWhitelistEnd;
+    private boolean sendExpirationWarnings;
 
     public WhitelistManager(ExtendedWhitelist plugin) {
         this.plugin = plugin;
         this.whitelistFile = new File(plugin.getDataFolder(), "whitelist.yml");
         this.whitelistConfig = YamlConfiguration.loadConfiguration(whitelistFile);
+        this.config = plugin.getConfig();
+
+        this.kickOnWhitelistEnd = config.getBoolean("kickOnWhitelistEnd", true);
+        this.sendExpirationWarnings = config.getBoolean("sendExpirationWarnings", true);
     }
 
-    public void addPlayerToWhitelist(String playerName, long durationInSeconds) {
-        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+    public void addPlayerToWhitelist(UUID playerUUID, long durationInSeconds) {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
         player.setWhitelisted(true);
-        whitelistConfig.set(playerName, System.currentTimeMillis() / 1000 + durationInSeconds);
-        whitelistConfig.set(playerName + ".duration", durationInSeconds);
-        whitelistConfig.set(playerName + ".addedAt", System.currentTimeMillis() / 1000);
+        String uuidString = playerUUID.toString();
+        whitelistConfig.set(uuidString, System.currentTimeMillis() / 1000 + durationInSeconds);
+        whitelistConfig.set(uuidString + ".duration", durationInSeconds);
+        whitelistConfig.set(uuidString + ".addedAt", System.currentTimeMillis() / 1000);
 
         saveWhitelist();
 
-        BukkitRunnable task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                removePlayerFromWhitelist(playerName);
-                if (player.isOnline()) {
-                    player.getPlayer().sendMessage("Your time on the whitelist has expired!");
-                }
-            }
-        };
+        BukkitRunnable task = createExpirationTask(playerUUID, durationInSeconds);
+        scheduleExpirationWarnings(player, durationInSeconds);
+
         task.runTaskLater(plugin, durationInSeconds * 20);
-        tasks.put(playerName, task);
+        tasks.put(playerUUID, task);
     }
-    public void addTimeToWhitelist(String playerName, long additionalTimeInSeconds) {
-        if (!whitelistConfig.contains(playerName)) {
-            throw new IllegalArgumentException("Player " + playerName + " is not on the whitelist.");
+
+    public void addTimeToWhitelist(UUID playerUUID, long additionalTimeInSeconds) {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
+        String uuidString = playerUUID.toString();
+        if (!whitelistConfig.contains(uuidString + ".duration")) {
+            String expiryMessage = ChatColor.translateAlternateColorCodes('&', config.getString("messages.whitelistExpired"));
+            player.getPlayer().sendMessage(expiryMessage);
         }
 
-        // Get the old expiry time and duration
-        long oldExpiryTime = whitelistConfig.getLong(playerName);
-        long oldDuration = whitelistConfig.getLong(playerName + ".duration");
-
-        // Calculate the new duration and expiry time
+        long oldAddedTime = whitelistConfig.getLong(playerUUID + ".addedAt");
+        long oldDuration = whitelistConfig.getLong(playerUUID + ".duration");
         long newDuration = oldDuration + additionalTimeInSeconds;
-        long newExpiryTime = System.currentTimeMillis() / 1000 + newDuration;
 
-        // Update the duration and expiry time in the whitelist config
-        whitelistConfig.set(playerName, newExpiryTime);
-        whitelistConfig.set(playerName + ".duration", newDuration);
+        whitelistConfig.set(playerUUID + ".duration", newDuration);
         saveWhitelist();
 
-        // Cancel the old task
-        BukkitRunnable oldTask = tasks.get(playerName);
+        BukkitRunnable oldTask = tasks.get(playerUUID);
         if (oldTask != null) {
             oldTask.cancel();
         }
 
-        // Schedule a new task to remove the player from the whitelist after the new duration
-        BukkitRunnable newTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                removePlayerFromWhitelist(playerName);
-                if (Bukkit.getOfflinePlayer(playerName).isOnline()) {
-                    Bukkit.getOfflinePlayer(playerName).getPlayer().sendMessage("Your time on the whitelist has expired!");
-                }
-            }
-        };
+        BukkitRunnable newTask = createExpirationTask(playerUUID, newDuration);
+        scheduleExpirationWarnings(player, newDuration);
+
         newTask.runTaskLater(plugin, newDuration * 20);
-        tasks.put(playerName, newTask);
+        tasks.put(playerUUID, newTask);
     }
 
-
-    public void removeTimeFromWhitelist(String playerName, long timeToRemoveInSeconds) {
-        if (!whitelistConfig.contains(playerName)) {
-            throw new IllegalArgumentException("Player " + playerName + " is not on the whitelist.");
+    public void removeTimeFromWhitelist(UUID playerUUID, long timeToRemoveInSeconds) {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
+        String uuidString = playerUUID.toString();
+        if (!whitelistConfig.contains(uuidString + ".duration")) {
+            throw new IllegalArgumentException("Player " + player.getName() + " is not on the whitelist.");
         }
 
-        // Get the old expiry time and duration
-        long oldExpiryTime = whitelistConfig.getLong(playerName);
-        long oldDuration = whitelistConfig.getLong(playerName + ".duration");
-
-        // Calculate the new duration and expiry time
+        long oldAddedTime = whitelistConfig.getLong(playerUUID + ".addedAt");
+        long oldDuration = whitelistConfig.getLong(playerUUID + ".duration");
         long newDuration = oldDuration - timeToRemoveInSeconds;
-        if (newDuration < 0) {
-            throw new IllegalArgumentException("Cannot remove more time than player " + playerName + " has on the whitelist.");
-        }
-        long newExpiryTime = System.currentTimeMillis() / 1000 + newDuration;
 
-        // Update the duration and expiry time in the whitelist config
-        whitelistConfig.set(playerName, newExpiryTime);
-        whitelistConfig.set(playerName + ".duration", newDuration);
+        if (newDuration < 0) {
+            throw new IllegalArgumentException("Cannot remove more time than player " + player.getName() + " has on the whitelist.");
+        }
+
+        whitelistConfig.set(playerUUID + ".duration", newDuration);
         saveWhitelist();
 
-        // Cancel the old task
-        BukkitRunnable oldTask = tasks.get(playerName);
+        BukkitRunnable oldTask = tasks.get(playerUUID);
         if (oldTask != null) {
             oldTask.cancel();
         }
+        BukkitRunnable newTask = createExpirationTask(playerUUID, newDuration);
+        scheduleExpirationWarnings(player, newDuration);
 
-        // Schedule a new task to remove the player from the whitelist after the new duration
-        BukkitRunnable newTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                removePlayerFromWhitelist(playerName);
-                if (Bukkit.getOfflinePlayer(playerName).isOnline()) {
-                    Bukkit.getOfflinePlayer(playerName).getPlayer().sendMessage("Your time on the whitelist has expired!");
-                }
-            }
-        };
         newTask.runTaskLater(plugin, newDuration * 20);
-        tasks.put(playerName, newTask);
+        tasks.put(playerUUID, newTask);
     }
 
-    public void removePlayerFromWhitelist(String playerName) {
-        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+    public void removePlayerFromWhitelist(UUID playerUUID) {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
+        String uuidString = playerUUID.toString();
         player.setWhitelisted(false);
-        whitelistConfig.set(playerName, null);
+        whitelistConfig.set(uuidString, null);
+        whitelistConfig.set(uuidString + ".duration", null);
+        whitelistConfig.set(uuidString + ".addedAt", null);
         saveWhitelist();
 
-        BukkitRunnable task = tasks.remove(playerName);
+        BukkitRunnable task = tasks.remove(playerUUID);
         if (task != null) {
             task.cancel();
         }
     }
-    public long getTimeLeft(String playerName) {
-        if (!whitelistConfig.contains(playerName)) {
-            throw new IllegalArgumentException("Player " + playerName + " is not on the whitelist.");
+
+    public long getTimeLeft(UUID playerUUID) {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
+        String uuidString = playerUUID.toString();
+        if (!whitelistConfig.contains(uuidString + ".duration")) {
+            throw new IllegalArgumentException("Player " + player.getName() + " is not on the whitelist.");
         }
 
-        long addedAt = whitelistConfig.getLong(playerName + ".addedAt");
-        long duration = whitelistConfig.getLong(playerName + ".duration");
+        long addedAt = whitelistConfig.getLong(playerUUID + ".addedAt");
+        long duration = whitelistConfig.getLong(playerUUID + ".duration");
 
         return addedAt + duration - System.currentTimeMillis() / 1000;
     }
+
     public void loadWhitelist() {
-        for (String playerName : whitelistConfig.getKeys(false)) {
-            if (!whitelistConfig.isSet(playerName + ".duration")) {
+        for (String uuidString : whitelistConfig.getKeys(false)) {
+            if (!whitelistConfig.isSet(uuidString + ".duration")) {
                 continue;
             }
 
-            long addedAt = whitelistConfig.getLong(playerName + ".addedAt");
-            long duration = whitelistConfig.getLong(playerName + ".duration");
+            UUID playerUUID = UUID.fromString(uuidString);
+
+            long addedAt = whitelistConfig.getLong(playerUUID + ".addedAt");
+            long duration = whitelistConfig.getLong(playerUUID + ".duration");
             long remainingTime = addedAt + duration - System.currentTimeMillis() / 1000;
 
             if (remainingTime > 0) {
-                addPlayerToWhitelist(playerName, remainingTime);
+                addPlayerToWhitelist(playerUUID, remainingTime);
             } else {
-                removePlayerFromWhitelist(playerName);
+                removePlayerFromWhitelist(playerUUID);
             }
         }
     }
 
+    public List<OfflinePlayer> getAllWhitelistedPlayers() {
+        return whitelistConfig.getKeys(false).stream()
+                .filter(key -> !key.contains("."))
+                .map(uuidString -> Bukkit.getOfflinePlayer(UUID.fromString(uuidString)))
+                .collect(Collectors.toList());
+    }
 
     public void saveWhitelist() {
         try {
@@ -172,4 +168,47 @@ public class WhitelistManager {
             e.printStackTrace();
         }
     }
+
+    private BukkitRunnable createExpirationTask(UUID playerUUID, long durationInSeconds) {
+        return new BukkitRunnable() {
+            @Override
+            public void run() {
+                removePlayerFromWhitelist(playerUUID);
+                OfflinePlayer player = Bukkit.getOfflinePlayer(playerUUID);
+                if (player.isOnline() && kickOnWhitelistEnd) {
+                    player.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&', config.getString("messages.whitelistExpired")));
+                }
+            }
+        };
+    }
+
+    private void scheduleExpirationWarnings(OfflinePlayer player, long durationInSeconds) {
+        if (!sendExpirationWarnings) {
+            return;
+        }
+
+        long fiveMinutes = 5 * 60; // 5 minutes in seconds
+        long oneMinute = 1 * 60; // 1 minute in seconds
+        long delayFiveMinutes = Math.max(durationInSeconds - fiveMinutes, 0);
+        long delayOneMinute = Math.max(durationInSeconds - oneMinute, 0);
+
+        if (delayFiveMinutes > 0) {
+            long ticksFiveMinutes = delayFiveMinutes * 20; // Convert seconds to ticks
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (player.isOnline()) {
+                    player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.5minleft")));
+                }
+            }, ticksFiveMinutes);
+        }
+
+        if (delayOneMinute > 0) {
+            long ticksOneMinute = delayOneMinute * 20; // Convert seconds to ticks
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (player.isOnline()) {
+                    player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.1minleft")));
+                }
+            }, ticksOneMinute);
+        }
+    }
+
 }

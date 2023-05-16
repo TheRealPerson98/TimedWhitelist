@@ -5,3 +5,22 @@ api-version: 1.19
 commands:
   ExtendedWhitelist:
     description: Adds a player to the whitelist for a specific duration.
+    permissions:
+      extendedwhitelist.add:
+        description: Permission to add players to the whitelist
+        default: op
+      extendedwhitelist.addtime:
+        description: Permission to add time to a player's whitelist
+        default: op
+      extendedwhitelist.removetime:
+        description: Permission to remove time from a player's whitelist
+        default: op
+      extendedwhitelist.remove:
+        description: Permission to remove players from the whitelist
+        default: op
+      extendedwhitelist.list:
+        description: Permission to list players on the whitelist
+        default: op
+      extendedwhitelist.list.all:
+        description: Permission to list all players on the whitelist
+        default: op
