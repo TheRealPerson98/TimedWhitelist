@@ -136,7 +136,16 @@ public class WhitelistManager {
             task.cancel();
         }
     }
+    public long getTimeLeft(String playerName) {
+        if (!whitelistConfig.contains(playerName)) {
+            throw new IllegalArgumentException("Player " + playerName + " is not on the whitelist.");
+        }
 
+        long addedAt = whitelistConfig.getLong(playerName + ".addedAt");
+        long duration = whitelistConfig.getLong(playerName + ".duration");
+
+        return addedAt + duration - System.currentTimeMillis() / 1000;
+    }
     public void loadWhitelist() {
         for (String playerName : whitelistConfig.getKeys(false)) {
             if (!whitelistConfig.isSet(playerName + ".duration")) {
