@@ -2,7 +2,7 @@
 
 TimedWhitelist is a Minecraft plugin that allows server administrators to add players to the whitelist for a specific duration. The plugin also provides features such as sending expiration warnings to players before their whitelist time expires, logging whitelist changes, and sending updates to a Discord channel.
 
-**Setup**
+## Setup
 
 Download the TimedWhitelist plugin and place it in your server's plugins directory.
 Restart your server to generate the configuration file.
@@ -19,7 +19,7 @@ To use these placeholders, you'll need to have PlaceholderAPI installed on your 
 
 Support: Discord.gg/BlockBattles
 
-**Permissions & Commands**
+## Permissions & Commands
 
 /timedwhitelist add <player> <time>: Adds a player to the whitelist for a specific duration. Requires timedwhitelist.add permission.
 /timedwhitelist addtime <player> <time>: Adds time to a player's whitelist duration. Requires timedwhitelist.addtime permission.
@@ -37,7 +37,7 @@ timedwhitelist.list: Permission to list players on the whitelist.
 timedwhitelist.list.all: Permission to list all players on the whitelist.
 timedwhitelist.toggle: Permission to toggle whitelist on and off.
 
-**Configuration**
+## Configuration
 
 The config.yml file for the TimedWhitelist plugin allows you to customize various aspects of the plugin's behavior. Here's a breakdown of the available options:
 
